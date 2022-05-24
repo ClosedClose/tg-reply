@@ -2,7 +2,7 @@ from telethon import TelegramClient, sync, events
 
 api_id = ''
 api_hash = ''
-message = 'Добрый день!\nДля связи с технической поддержкой 1it.io напишите сообщение: @123_bot'
+message = 'Добрый день!\nДля связи с технической поддержкой NAME напишите сообщение: @123_bot'
 
 client = TelegramClient('session_name', api_id, api_hash)
 client.start()

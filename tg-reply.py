@@ -1,22 +1,30 @@
-from telethon import TelegramClient, sync, events
-import datetime
+from telethon import TelegramClient, sync, events, functions, types
+import datetime, os, sys
 
 api_id = ''
 api_hash = ''
 message = 'Добрый день!\nДля связи с технической поддержкой NAME напишите сообщение: @123_bot'
-
-
-def log(text):
-    with open('tg-reply.log', 'a') as logfile:
-        logfile.write(str(datetime.datetime.now()) + ' | ' + text + '\n')
-
+log_enable = True
 
 client = TelegramClient('session_name', api_id, api_hash)
 client.start()
 myself = client.get_me()
 
+
+def log(text):
+    if log_enable:
+        with open('tg-reply.log', 'a') as logfile:
+            logfile.write(datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S') + ' | ' + text + '; PID:' + str(os.getpid()) + '\n')
+
+
+if os.name == 'posix':
+    if __name__ == "__main__":
+        fpid = os.fork()
+        if fpid != 0:
+            sys.exit(0)
+
 if client.is_user_authorized():
-    print('Auth OK: ' + myself.username + ', ' + myself.phone)
+    print('Auth OK: ' + myself.username + ', ' + myself.phone + ' PID: ' + str(os.getpid()))
     log('Auth OK: ' + myself.username + ', ' + myself.phone)
 
 
@@ -26,19 +34,9 @@ async def normal_handler(event):
         sender = await client.get_entity(event.from_id)
         if sender.username != myself.username:
             if 'bot' not in sender.username:
-                print("==== New message ====")
-                print(str(event.message.date))
-                print("username: " + sender.username)
-                if sender.phone is not None:
-                    print("phone: " + str(sender.phone))
-                print('text: ' + event.message.text)
-                # await event.reply(message)
+                log(str(sender.username + ';' + sender.phone + ';' + event.message.text))
                 await client.send_message(sender.username, message)
-            else:
-                print("==== New message (bot) ====")
-                print(str(event.message.date))
-                print("username: " + sender.username)
-                print('text: ' + event.message.text)
+                # await event.reply(message)
 
 
 client.run_until_disconnected()
